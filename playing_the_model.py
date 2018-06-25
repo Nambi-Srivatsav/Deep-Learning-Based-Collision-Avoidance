@@ -45,7 +45,6 @@ def angle_between_and_side(vector1, vector2):
         
     return side,np.arccos(np.clip(np.dot(vector1, vector2), -1.0, 1.0))
     
-    
 
 class Car_env:
         
