@@ -54,13 +54,13 @@ After running the above commands, to have different start position; run any of t
 
 ```python
 python playing_the_model.py 1
-
+```
 ```python
 python playing_the_model.py 2
 ```
-
 ```python
 python playing_the_model.py 3
+```
 ```
 ```
 
