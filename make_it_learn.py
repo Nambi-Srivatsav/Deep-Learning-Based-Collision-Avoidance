@@ -12,7 +12,7 @@ torch.manual_seed(10)
 input_size = 6
 hidden_size = 200
 num_classes = 1
-num_epochs = 600
+num_epochs = 26
 batch_size = 1
 learning_rate = 0.001
 
@@ -105,73 +105,11 @@ if __name__ == "__main__":
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
-            losses += loss.data[0]
+            losses += loss.item()
             
         print ('Epoch %d, Loss: %.4f' %(j+1, losses/sensor_nn_data.shape[0]))
-        
-        if(j%25 == 0):
-            
-            imgs = sensor_nn_data
-            lbls = sensor_nn_labels
-
-            correct = 0
-            total = imgs.shape[0]
-                
-            for i in range(train_size,total):  
-                
-                input_values = Variable(imgs[i])
-                labels = Variable(lbls[i])
-                
-                outputs = net(input_values)
-                predicted = torch.round(outputs.data)[0]
-                
-                #correct += (predicted == labels).data[0]
-                
-                labels = labels.data[0]
-                predicted = predicted
-                
-                if(labels == 0 and predicted == 0):
-                    correct += 1
-                
-                if(labels >= 1 and predicted >= 1):
-                    correct += 1
-            
-            print('Accuracy of the network on the  test input_values: %d %%' % (100 * correct / test_size), correct, test_size)
-        
+           
         torch.save(net.state_dict(), './saved_nets/nn_car_model.pkl')
-        
-        
-        
-        if(j%25 == 0):
-
-            correct = 0
-            total = collision_data.shape[0]
-            
-            for i in range(total):  
-                
-                input_values = Variable(collision_data[i])
-                labels = Variable(collision_sensor_nn_labels[i])
-                
-                
-                outputs = net(input_values)
-                predicted = torch.round(outputs.data)[0]
-                
-                labels = labels.data[0]
-                predicted = predicted
-                
-                if(labels == 0 and predicted == 0):
-                    correct += 1
-                
-                elif(labels == predicted):
-                    correct += 1
-                else:
-                    #print(input_values.data.numpy(),labels,predicted)
-                    print("")
-                    
-            
-            print('Accuracy of the network on the test input_values: %d %%' % (100 * correct / total), correct, total)
-            
-            torch.save(net.state_dict(), './saved_nets/nn_car_model.pkl')
            
         
 
