@@ -10,6 +10,7 @@ import random
 import math
 import numpy as np
 from make_it_learn import *
+import sys
 
 width = 600
 height = 600
@@ -27,8 +28,13 @@ model = None
 model = Net(input_size, hidden_size, num_classes)
 model.load_state_dict(torch.load('./saved_nets/nn_car_model.pkl'))
 
-next_action = 0
 
+car_start_location =  1
+if(sys.argv[1] == "2"):
+    car_start_location =  2
+elif(sys.argv[1] == "3"):
+    car_start_location =  3
+    
 def points_from_angle(angle):
     """ Returns the unit vector with given angle """
     return math.cos(angle),math.sin(angle)
@@ -51,10 +57,21 @@ class Car_env:
     def __init__(self):
         """ Intializing environment variables """
         
+        global car_start_location
+        
         self.crashed = False
         self.detect_crash = 0
         self.space = pymunk.Space()
-        self.build_car(100, 50, 20)
+        
+        if(car_start_location == 1):
+            self.build_car(100, 100, 20)
+        
+        elif(car_start_location == 2):
+            self.build_car(100, 300, 20)    
+        
+        elif(car_start_location == 3):
+            self.build_car(100, 450, 20)
+            
         self.num_steps = 0
         self.walls = []
         self.wall_shapes = []
@@ -102,7 +119,6 @@ class Car_env:
         self.car.position = Vec2d(x,y)
         self.car.angle = 1.54
         car_direction = Vec2d(points_from_angle(self.car.angle))
-        #pdb.set_trace()
         self.space.add(self.car)
         self.car_rect = pygame.Rect(x-r,600-y-r, 2*r, 2*r)
 
@@ -171,7 +187,6 @@ class Car_env:
                  
         elif action == 5:
             
-            #print("action 5!")
             planned_angle = self.plan_angle(self.car.position,(600,600))
             move_sign = 0
             x1,y1 = points_from_angle(self.car.angle)
@@ -188,7 +203,6 @@ class Car_env:
                         self.prev_body_angle =  self.car.angle
                         self.car_direction = Vec2d(points_from_angle(self.car.angle))
                         car_direction = self.car_direction
-                        #self.car.velocity = car_speed/2 * car_direction
                         self.car.velocity = car_speed* car_direction
                 
                 else:
@@ -196,7 +210,6 @@ class Car_env:
                         self.prev_body_angle =  self.car.angle
                         self.car_direction = Vec2d(points_from_angle(self.car.angle))
                         car_direction = self.car_direction
-                        #self.car.velocity = car_speed/2 * car_direction
                         self.car.velocity = car_speed * car_direction
             else:
                 
@@ -226,8 +239,7 @@ class Car_env:
         data_tensor = torch.Tensor(sensors_data[:-1]).view(1,-1)
         
         if (model != None):
-            data_tensor[:,:-1] = (data_tensor[:,:-1] + 1)/11
-            data_tensor[:,-1] = (data_tensor[:,-1] + 40)/ 460
+        
             self.detect_crash = model(Variable(data_tensor))
             self.detect_crash = abs(np.round(self.detect_crash.data[0][0]))
             if(self.detect_crash > 0):
@@ -352,7 +364,6 @@ if __name__ == "__main__":
         
         if(env.car.position[0] > 500 and env.car.position[1] > 520):
             print("MISSION COMPLETE!")
-            exit()
             
         else:
             if (env.detect_crash > 0):

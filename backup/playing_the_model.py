@@ -3,8 +3,8 @@ from pygame.color import THECOLORS
 import pdb
 import pymunk
 from pymunk.vec2d import Vec2d
-from pymunk.pygame_util import from_pygame, to_pygame
 from pymunk.pygame_util import DrawOptions as draw
+from pymunk.pygame_util import from_pygame, to_pygame
 import pymunk.util as u
 import random
 import math
@@ -20,24 +20,41 @@ wall_direction = 1
 summary_sensor_data = []
 
 step_size_value = 1/10
-clock_tick_value = 1000
+clock_tick_value = 25
 car_speed = 50
 
 model = None
+model = Net(input_size, hidden_size, num_classes)
+model.load_state_dict(torch.load('./saved_nets/nn_car_model.pkl'))
 
-
+next_action = 0
 
 def points_from_angle(angle):
     """ Returns the unit vector with given angle """
     return math.cos(angle),math.sin(angle)
+
+def angle_between_and_side(vector1, vector2):
+    """ Returns the angle between vectors and the side of resultant vector """
+    vector1 = np.array(vector1)
+    vector2 = np.array(vector2)
     
+    if(np.dot(vector1, vector2) > 0):
+        side = 1
+    else:
+        side = -1
+        
+    return side,np.arccos(np.clip(np.dot(vector1, vector2), -1.0, 1.0))
+    
+
 class Car_env:
         
     def __init__(self):
+        """ Intializing environment variables """
+        
         self.crashed = False
         self.detect_crash = 0
         self.space = pymunk.Space()
-        self.build_car(50, 450, 20)
+        self.build_car(100, 50, 20)
         self.num_steps = 0
         self.walls = []
         self.wall_shapes = []
@@ -47,10 +64,10 @@ class Car_env:
         self.wall_rects.append(wall_rect)
         wall_body, wall_shape, wall_rect = self.build_wall(200, 125, 50)
         self.wall_rects.append(wall_rect)
-
+                
         wall_body, wall_shape, wall_rect = self.build_wall(200, 550, 50)
         self.wall_rects.append(wall_rect)
-        
+                
         wall_body, wall_shape, wall_rect = self.build_wall(200, 450, 50)
         self.wall_rects.append(wall_rect)
         
@@ -65,18 +82,18 @@ class Car_env:
         wall_body, wall_shape, wall_rect = self.build_wall(115, 950, 400)
         self.wall_rects.append(wall_rect)
         
-        self.prev_action = 0
-        
     
     def build_wall(self, x, y, r):
-        """ Builds the wall """
+        """ build wall on the map """
+        
         size = r
         wall_rect = pygame.Rect(x-r,600-y-r, 2*r, 2*r)
         return wall_rect,wall_rect,wall_rect
         
 
     def build_car(self, x, y, r):
-        """ Builds the car """
+        """ builds the car object """
+        
         size = r
         box_points = list(map(Vec2d, [(-size, -size), (-size, size), (size,size), (size, -size)]))
         mass  = 0.5
@@ -85,12 +102,14 @@ class Car_env:
         self.car.position = Vec2d(x,y)
         self.car.angle = 1.54
         car_direction = Vec2d(points_from_angle(self.car.angle))
+        #pdb.set_trace()
         self.space.add(self.car)
         self.car_rect = pygame.Rect(x-r,600-y-r, 2*r, 2*r)
 
         return self.car
     
     def draw_everything(self,flag=0):
+        """ puts everything on the console """
         
         img = pygame.image.load("./assets/intel.jpg")
         x, y = 580,550
@@ -122,62 +141,78 @@ class Car_env:
             pygame.draw.rect(screen, (169,169, 169), ob)
     
     def plan_angle(self,A,B):
-        """ Angle between two points """
+        """ Angle between two vectors """
+        
         angle = np.arctan2(B[1] - A[1], B[0] - A[0])
         return angle
         
     
     def _step(self, action, crash_step=0):
         """ Take the simulation one step further """
-            
+        
         self.car.angle = self.car.angle % 6.2831853072
         
         if action == 3:  
+            
             self.car.angle -= 0.1
             self.prev_body_angle =  self.car.angle
             self.car_direction = Vec2d(points_from_angle(self.car.angle))
             car_direction = self.car_direction
-            if(crash_step > 0):
-                self.car.velocity = car_speed/3 * car_direction
-            else:
-                self.car.velocity = car_speed * car_direction
-                
-            self.prev_action = 3
+            self.car.velocity = car_speed/2 * car_direction
             
         elif action == 4:
+            
             self.car.angle += 0.1
             self.prev_body_angle =  self.car.angle
-                
             self.car_direction = Vec2d(points_from_angle(self.car.angle))
             car_direction = self.car_direction
             self.car.velocity = car_speed * car_direction
-            if(crash_step == 1):
-                self.car.velocity = car_speed/3 * car_direction
-            else:
-                self.car.velocity = car_speed * car_direction
-            
-            self.prev_action = 4
+            self.car.velocity = car_speed/2 * car_direction
                  
         elif action == 5:
             
-            self.car.angle += 0.
-            self.prev_body_angle =  self.car.angle
+            #print("action 5!")
+            planned_angle = self.plan_angle(self.car.position,(600,600))
+            move_sign = 0
+            x1,y1 = points_from_angle(self.car.angle)
+            x2,y2 = points_from_angle(planned_angle)
+            side,between_angle = angle_between_and_side((x1,y1),(x2,y2))
+            
+            if(between_angle > 0.15):
                 
-            self.car_direction = Vec2d(points_from_angle(self.car.angle))
-            car_direction = self.car_direction
-            self.car.velocity = car_speed * car_direction
-            if(crash_step == 1):
-                self.car.velocity = car_speed/3 * car_direction
+                d = np.cross((x1,y1),(x2,y2))
+                
+                if(d > 0):
+                        
+                        self.car.angle += 0.1
+                        self.prev_body_angle =  self.car.angle
+                        self.car_direction = Vec2d(points_from_angle(self.car.angle))
+                        car_direction = self.car_direction
+                        #self.car.velocity = car_speed/2 * car_direction
+                        self.car.velocity = car_speed* car_direction
+                
+                else:
+                        self.car.angle -= 0.1
+                        self.prev_body_angle =  self.car.angle
+                        self.car_direction = Vec2d(points_from_angle(self.car.angle))
+                        car_direction = self.car_direction
+                        #self.car.velocity = car_speed/2 * car_direction
+                        self.car.velocity = car_speed * car_direction
             else:
+                
+                self.car.angle = planned_angle
+                self.prev_body_angle =  self.car.angle
+                self.car_direction = Vec2d(points_from_angle(self.car.angle))
+                car_direction = self.car_direction
                 self.car.velocity = car_speed * car_direction
+
         
         screen.fill(THECOLORS["white"])
-        
         self.draw_everything()
         self.space.step(step_size_value)
-        
         clock.tick(clock_tick_value)
         
+        # Get the current location and the sensors_data there.
         x, y = self.car.position
         sensors_data = self.all_sensor_sensors_data(x, y, self.car.angle)
         normalized_sensors_data = [(x-100.0)/100.0 for x in sensors_data] 
@@ -189,48 +224,44 @@ class Car_env:
         print(sensors_data[:-2])
         
         data_tensor = torch.Tensor(sensors_data[:-1]).view(1,-1)
+        
+        if (model != None):
+            data_tensor[:,:-1] = (data_tensor[:,:-1] + 1)/11
+            data_tensor[:,-1] = (data_tensor[:,-1] + 40)/ 460
+            self.detect_crash = model(Variable(data_tensor))
+            self.detect_crash = abs(np.round(self.detect_crash.data[0][0]))
+            if(self.detect_crash > 0):
+                signal_data = sensors_data[:-2]
+                if(sum(signal_data[:2]) > sum(signal_data[-2:])):
+                 self.detect_crash = 3
+                else:
+                 self.detect_crash = 4
+                
 
         for ob in self.wall_rects:
             if ob.colliderect(self.circle_rect):
+                    self.crashed = True
                     self.recover_from_crash(car_direction)
         
         if (x >= 580 or x <= 20 or y <= 20 or y >=680):
+                    self.crashed = True
                     self.recover_from_crash(car_direction)
         
         signal_data = sensors_data[:-2]
         
-        if 1 in signal_data:
-        
-            if(action == 5):
-                action = self.prev_action
-            self.crashed = True
-            #sensors_data[-1] = action
-            sensors_data[-1] = 1
-            summary_sensor_data.append(sensors_data)
-            print(sensors_data[:-2])
-            reward = -500
-            self.recover_from_crash(car_direction)
-        else:
-            
-            self.detect_crash = 0
-            summary_sensor_data.append(sensors_data)
-            
-        
-            
         return
 
 
     def recover_from_crash(self, car_direction):
         """ What happens when car crashes """
+        
         while self.crashed:
             self.crashed = False 
             for i in range(1):
-
-                self.car.angle += 3.14
+                self.car.angle += 2
                 self.car_direction = Vec2d(points_from_angle(self.car.angle))
                 car_direction = self.car_direction
                 self.car.velocity = car_speed * car_direction
-            
                 screen.fill(THECOLORS["white"])
                 self.draw_everything(flag=1)
                 self.space.step(step_size_value)
@@ -242,14 +273,13 @@ class Car_env:
         """ Returns the all sensor values """
         
         sensors_data = []
-       
         middle_sensor_start_point = (25 + x, y) # x + 35 + 10
         middle_sensor_end_point = (65 + x , y)
         number_of_sensors = 5
         relative_angles = []
         angle_to_begin_with = 1.3
-        offset_increment =  (angle_to_begin_with*2)/(number_of_sensors-1)
-        relative_angles.append(-angle_to_begin_with) 
+        offset_increment =  (angle_to_begin_with*2)/(number_of_sensors-1) # increment by
+        relative_angles.append(-angle_to_begin_with) # angle to begin with
         
         for i in range(number_of_sensors-1):
             relative_angles.append(relative_angles[i]+offset_increment)
@@ -277,7 +307,7 @@ class Car_env:
             x_new = x1 + (x2-x1) * (k/number_of_points)
             y_new = y1 + (y2-y1) * (k/number_of_points)
             pixels_in_path.append((x_new,y_new))
-
+        
         for pixel in pixels_in_path:
             distance += 1
             
@@ -303,7 +333,7 @@ class Car_env:
         
     def rotate(self,origin, point, angle):
         """ Rotates a point along a given point """
-         
+        
         x1, y1 = origin
         x2, y2 = point
         final_x = x1 + math.cos(angle) * (x2 - x1) - math.sin(angle) * (y2 - y1)
@@ -311,41 +341,24 @@ class Car_env:
         final_y = abs(width - final_y)
         
         return final_x,final_y
-        
-
-def take_left_or_right_turn(env):
-    """ Take random action for left or right turn """
-    x = random.randint(3,4)
-    for i in range(14):
-        env._step(x)
-
-
-def go_straight(env):
-    """ Take action to go straight """
-
-    x = random.randint(5,5)
-    for i in range(14):
-        env._step(x)
-        
 
 if __name__ == "__main__":
     
     env = Car_env()
     random.seed(10)
+    env._step(5)
     
-    env._step(3)
-    
-    for i in range(3000):
+    for i in range(2000):
         
         if(env.car.position[0] > 500 and env.car.position[1] > 520):
             print("MISSION COMPLETE!")
-            exit()
             
         else:
-            if (random.random() > 0.5):
-                take_left_or_right_turn(env)
+            if (env.detect_crash > 0):
+                driving_side = env.detect_crash
+                for i in range(14):
+                        env._step(driving_side)
             else:
-                go_straight(env)
-        
-        np.savetxt("./sensor_data/sensor_data.txt",summary_sensor_data)
+                x = 5
+                env._step(x)
 

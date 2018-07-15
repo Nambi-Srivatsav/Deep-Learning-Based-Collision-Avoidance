@@ -25,6 +25,7 @@ car_speed = 50
 
 model = None
 
+next_action = 0
 
 
 def points_from_angle(angle):
@@ -204,8 +205,7 @@ class Car_env:
             if(action == 5):
                 action = self.prev_action
             self.crashed = True
-            #sensors_data[-1] = action
-            sensors_data[-1] = 1
+            sensors_data[-1] = action
             summary_sensor_data.append(sensors_data)
             print(sensors_data[:-2])
             reward = -500
@@ -248,8 +248,8 @@ class Car_env:
         number_of_sensors = 5
         relative_angles = []
         angle_to_begin_with = 1.3
-        offset_increment =  (angle_to_begin_with*2)/(number_of_sensors-1)
-        relative_angles.append(-angle_to_begin_with) 
+        offset_increment =  (angle_to_begin_with*2)/(number_of_sensors-1) # increment by
+        relative_angles.append(-angle_to_begin_with) # angle to begin with
         
         for i in range(number_of_sensors-1):
             relative_angles.append(relative_angles[i]+offset_increment)
@@ -342,7 +342,9 @@ if __name__ == "__main__":
             exit()
             
         else:
+                      
             if (random.random() > 0.5):
+            
                 take_left_or_right_turn(env)
             else:
                 go_straight(env)

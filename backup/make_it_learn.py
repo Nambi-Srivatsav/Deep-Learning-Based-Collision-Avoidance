@@ -23,7 +23,7 @@ class Net(nn.Module):
         super(Net, self).__init__()
         self.fc1 = nn.Linear(input_size, hidden_size) 
         self.relu = nn.ReLU()
-        self.fc2 = nn.Linear(hidden_size, num_classes) 
+        self.fc2 = nn.Linear(hidden_size, hidden_size) 
         self.fc3 = nn.Linear(hidden_size, num_classes)
   
         
@@ -32,6 +32,8 @@ class Net(nn.Module):
         out = self.fc1(x)
         out = self.relu(out)
         out = self.fc2(out)
+        out = self.relu(out)
+        out = self.fc3(out)
         return out
 
 
@@ -46,11 +48,16 @@ if __name__ == "__main__":
 
     sensor_data = np.loadtxt('./sensor_data/sensor_data.txt')
     
-    # Mark how many steps beforehand the collision needs to be predicted
+    #sensor_data[:,-2] = (sensor_data[:,-2] + 40)/460
+    #sensor_data[:,:-2] = (sensor_data[:,:-2] +1)/11
+    sensor_data[:,-2] = (sensor_data[:,-2] - sensor_data[:,-2].min())/sensor_data[:,-2].max()
+    sensor_data[:,:-2] = (sensor_data[:,:-2] + sensor_data[:,:-2].min())/sensor_data[:,:-2].max()
     
+   
+    #sensor_data_last_row_2 = np.roll(sensor_data[:,-1], -2) # how many timesteps before you want to find out collision
     sensor_data_row_0 = sensor_data[:,-1]
-    sensor_data_row_1 = np.roll(sensor_data[:,-1], -1) 
-    sensor_data_row_2 = np.roll(sensor_data[:,-1], -2) 
+    sensor_data_row_1 = np.roll(sensor_data[:,-1], -1) # how many timesteps before you want to find out collision
+    sensor_data_row_2 = np.roll(sensor_data[:,-1], -2) # how many timesteps before you want to find out collision
     sensor_data_row_3 = np.roll(sensor_data[:,-1], -3)
     sensor_data_row_4 = np.roll(sensor_data[:,-1], -4)
     
@@ -66,7 +73,7 @@ if __name__ == "__main__":
     
     # Duplicating collision Data for faster learning
     
-    for i in range(5):
+    for i in range(6):
         sensor_data = np.append(sensor_data,collision_full_data,axis=0)
     
     np.random.shuffle(sensor_data)
@@ -90,11 +97,12 @@ if __name__ == "__main__":
 
         losses = 0
         for i in range(train_size):  
+            # Convert torch tensor to Variable
             input_values = Variable(sensor_nn_data[i])
             labels = Variable(sensor_nn_labels[i])
             
             # Forward + Backward + Optimize
-            optimizer.zero_grad()
+            optimizer.zero_grad()  # zero the gradient buffer
             outputs = net(input_values)
             
             loss = criterion(outputs, labels)
