@@ -4,11 +4,22 @@ This is a demonstration of collision-detection and driving using a feedforward n
 
 ## Requirements
 
-Please install Pygame and PyMunk in Python3 environment.
+For smooth installation on Windows and Linux. It is recommended to install anaconda from here https://www.anaconda.com/download/
+
+After installing Anaconda, Please run the following steps.
 
 ```python
+
+conda create --name intel_game_env python=3.6
+conda activate intel_game_env 
+conda install pytorch-cpu -c pytorch 
+
+pip install torchvision
+pip install Cython
 pip install pygame
 pip install pymunk
+
+
 ```
 
 ## Usage

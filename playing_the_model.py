@@ -352,6 +352,7 @@ if __name__ == "__main__":
         
         if(env.car.position[0] > 500 and env.car.position[1] > 520):
             print("MISSION COMPLETE!")
+            exit()
             
         else:
             if (env.detect_crash > 0):
