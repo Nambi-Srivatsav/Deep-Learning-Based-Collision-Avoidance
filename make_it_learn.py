@@ -12,7 +12,7 @@ torch.manual_seed(10)
 input_size = 6
 hidden_size = 200
 num_classes = 1
-num_epochs = 26
+num_epochs = 600
 batch_size = 1
 learning_rate = 0.001
 
