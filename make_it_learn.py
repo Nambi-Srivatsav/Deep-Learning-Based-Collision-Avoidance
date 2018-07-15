@@ -95,7 +95,7 @@ if __name__ == "__main__":
             losses += loss.item()
             
         print ('Epoch %d, Loss: %.4f' %(j+1, losses/sensor_nn_data.shape[0]))       
-        torch.save(net.state_dict(), './saved_nets/nn_car_model.pkl')
+        torch.save(net.state_dict(), './saved_nets/nn_bot.pkl')
            
         
 

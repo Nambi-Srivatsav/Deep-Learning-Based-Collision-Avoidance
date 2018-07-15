@@ -26,7 +26,7 @@ car_speed = 50
 
 model = None
 model = Net(input_size, hidden_size, num_classes)
-model.load_state_dict(torch.load('./saved_nets/nn_car_model.pkl'))
+model.load_state_dict(torch.load('./saved_nets/nn_bot.pkl'))
 
 
 car_start_location =  2
