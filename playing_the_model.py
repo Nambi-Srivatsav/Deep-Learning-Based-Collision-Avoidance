@@ -30,9 +30,10 @@ model.load_state_dict(torch.load('./saved_nets/nn_car_model.pkl'))
 
 
 car_start_location =  1
-if(sys.argv[1] == "2"):
+
+if(len(sys.argv) >  1 and sys.argv[1] == "2"):
     car_start_location =  2
-elif(sys.argv[1] == "3"):
+elif(len(sys.argv) >  1  and sys.argv[1] == "3"):
     car_start_location =  3
     
 def points_from_angle(angle):
@@ -81,13 +82,10 @@ class Car_env:
         self.wall_rects.append(wall_rect)
         wall_body, wall_shape, wall_rect = self.build_wall(200, 125, 50)
         self.wall_rects.append(wall_rect)
-                
         wall_body, wall_shape, wall_rect = self.build_wall(200, 550, 50)
         self.wall_rects.append(wall_rect)
-                
         wall_body, wall_shape, wall_rect = self.build_wall(200, 450, 50)
         self.wall_rects.append(wall_rect)
-        
         wall_body, wall_shape, wall_rect = self.build_wall(400, 350, 50)
         self.wall_rects.append(wall_rect)
         wall_body, wall_shape, wall_rect = self.build_wall(400, 250, 50)

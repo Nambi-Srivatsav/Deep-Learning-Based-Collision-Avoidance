@@ -25,6 +25,7 @@ car_speed = 50
 
 model = None
 
+next_action = 0
 
 
 def points_from_angle(angle):
@@ -47,13 +48,10 @@ class Car_env:
         self.wall_rects.append(wall_rect)
         wall_body, wall_shape, wall_rect = self.build_wall(200, 125, 50)
         self.wall_rects.append(wall_rect)
-
         wall_body, wall_shape, wall_rect = self.build_wall(200, 550, 50)
         self.wall_rects.append(wall_rect)
-        
         wall_body, wall_shape, wall_rect = self.build_wall(200, 450, 50)
         self.wall_rects.append(wall_rect)
-        
         wall_body, wall_shape, wall_rect = self.build_wall(400, 350, 50)
         self.wall_rects.append(wall_rect)
         wall_body, wall_shape, wall_rect = self.build_wall(400, 250, 50)
@@ -204,7 +202,6 @@ class Car_env:
             if(action == 5):
                 action = self.prev_action
             self.crashed = True
-            #sensors_data[-1] = action
             sensors_data[-1] = 1
             summary_sensor_data.append(sensors_data)
             print(sensors_data[:-2])
@@ -243,13 +240,13 @@ class Car_env:
         
         sensors_data = []
        
-        middle_sensor_start_point = (25 + x, y) # x + 35 + 10
-        middle_sensor_end_point = (65 + x , y)
+        middle_sensor_start_point = (25 + x, y) # sensor start point
+        middle_sensor_end_point = (65 + x , y) # sensor end point
         number_of_sensors = 5
         relative_angles = []
         angle_to_begin_with = 1.3
-        offset_increment =  (angle_to_begin_with*2)/(number_of_sensors-1)
-        relative_angles.append(-angle_to_begin_with) 
+        offset_increment =  (angle_to_begin_with*2)/(number_of_sensors-1) 
+        relative_angles.append(-angle_to_begin_with) # angle to begin with
         
         for i in range(number_of_sensors-1):
             relative_angles.append(relative_angles[i]+offset_increment)
