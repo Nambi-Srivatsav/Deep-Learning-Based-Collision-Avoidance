@@ -45,9 +45,24 @@ This program does three things:
 ```python
 python playing_the_model.py
 ```
-This program loads the neural network model and opens up the simulator. The car is programmed to drive itself to the destination and feeding the sensor data to the neural network at everytime step.
+This program loads the neural network model and opens up the simulator. The bot is programmed to drive itself to the destination and feeding the sensor data to the neural network at everytime step.
 If the neural network detects collision bot turns green and takes alternative action, to the action it was planning to take.
 
+### Optional
+
+After running the above commands, to have different start position; run any of the commands below
+
+```python
+python playing_the_model.py 1
+
+```python
+python playing_the_model.py 2
+```
+
+```python
+python playing_the_model.py 3
+```
+```
 
 ## Feedback
 

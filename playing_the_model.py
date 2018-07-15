@@ -22,19 +22,19 @@ summary_sensor_data = []
 
 step_size_value = 1/10
 clock_tick_value = 25
-car_speed = 50
+bot_speed = 50
 
 model = None
 model = Net(input_size, hidden_size, num_classes)
 model.load_state_dict(torch.load('./saved_nets/nn_bot.pkl'))
 
 
-car_start_location =  2
+bot_start_location =  2
 
 if(len(sys.argv) >  1 and sys.argv[1] == "2"):
-    car_start_location =  3
+    bot_start_location =  3
 elif(len(sys.argv) >  1  and sys.argv[1] == "3"):
-    car_start_location =  1
+    bot_start_location =  1
     
 def points_from_angle(angle):
     """ Returns the unit vector with given angle """
@@ -53,25 +53,25 @@ def angle_between_and_side(vector1, vector2):
     return side,np.arccos(np.clip(np.dot(vector1, vector2), -1.0, 1.0))
     
 
-class Car_env:
+class Bot_env:
         
     def __init__(self):
         """ Intializing environment variables """
         
-        global car_start_location
+        global bot_start_location
         
         self.crashed = False
         self.detect_crash = 0
         self.space = pymunk.Space()
         
-        if(car_start_location == 1):
-            self.build_car(100, 100, 20)
+        if(bot_start_location == 1):
+            self.build_bot(100, 100, 20)
         
-        elif(car_start_location == 2):
-            self.build_car(100, 300, 20)    
+        elif(bot_start_location == 2):
+            self.build_bot(100, 300, 20)    
         
-        elif(car_start_location == 3):
-            self.build_car(100, 450, 20)
+        elif(bot_start_location == 3):
+            self.build_bot(100, 450, 20)
             
         self.num_steps = 0
         self.walls = []
@@ -106,21 +106,21 @@ class Car_env:
         return wall_rect,wall_rect,wall_rect
         
 
-    def build_car(self, x, y, r):
-        """ builds the car object """
+    def build_bot(self, x, y, r):
+        """ builds the bot object """
         
         size = r
         box_points = list(map(Vec2d, [(-size, -size), (-size, size), (size,size), (size, -size)]))
         mass  = 0.5
         moment = pymunk.moment_for_poly(mass,box_points, Vec2d(0,0))
-        self.car = pymunk.Body(mass, moment)
-        self.car.position = Vec2d(x,y)
-        self.car.angle = 1.54
-        car_direction = Vec2d(points_from_angle(self.car.angle))
-        self.space.add(self.car)
-        self.car_rect = pygame.Rect(x-r,600-y-r, 2*r, 2*r)
+        self.bot = pymunk.Body(mass, moment)
+        self.bot.position = Vec2d(x,y)
+        self.bot.angle = 1.54
+        bot_direction = Vec2d(points_from_angle(self.bot.angle))
+        self.space.add(self.bot)
+        self.bot_rect = pygame.Rect(x-r,600-y-r, 2*r, 2*r)
 
-        return self.car
+        return self.bot
     
     def draw_everything(self,flag=0):
         """ puts everything on the console """
@@ -131,21 +131,21 @@ class Car_env:
         screen.blit(img,to_pygame(adjusted_img_position,screen))
         
         if(flag==0 and self.detect_crash == 0):
-            (self.car_rect.x,self.car_rect.y) = self.car.position[0],600-self.car.position[1]
-            self.circle_rect = pygame.draw.circle(screen, (169,169,169), (self.car_rect.x,self.car_rect.y), 20, 0)
+            (self.bot_rect.x,self.bot_rect.y) = self.bot.position[0],600-self.bot.position[1]
+            self.circle_rect = pygame.draw.circle(screen, (169,169,169), (self.bot_rect.x,self.bot_rect.y), 20, 0)
         
         elif(flag==0 and self.detect_crash >= 1):
             
-            (self.car_rect.x,self.car_rect.y) = self.car.position[0],600-self.car.position[1]
-            self.circle_rect = pygame.draw.circle(screen, (0,255,0), (self.car_rect.x,self.car_rect.y), 20, 0)
+            (self.bot_rect.x,self.bot_rect.y) = self.bot.position[0],600-self.bot.position[1]
+            self.circle_rect = pygame.draw.circle(screen, (0,255,0), (self.bot_rect.x,self.bot_rect.y), 20, 0)
         
         else:
-            (self.car_rect.x,self.car_rect.y) = self.car.position[0],600-self.car.position[1]
-            self.circle_rect = pygame.draw.circle(screen, (255,0,0), (self.car_rect.x,self.car_rect.y), 20, 0)
+            (self.bot_rect.x,self.bot_rect.y) = self.bot.position[0],600-self.bot.position[1]
+            self.circle_rect = pygame.draw.circle(screen, (255,0,0), (self.bot_rect.x,self.bot_rect.y), 20, 0)
         
         img = pygame.image.load("./assets/spherelight.png")
         offset = Vec2d(img.get_size()) / 2.
-        x, y =  self.car.position
+        x, y =  self.bot.position
         y = 600.0 -y
         
         adjusted_img_position = (x,y) - offset
@@ -164,30 +164,30 @@ class Car_env:
     def _step(self, action, crash_step=0):
         """ Take the simulation one step further """
         
-        self.car.angle = self.car.angle % 6.2831853072
+        self.bot.angle = self.bot.angle % 6.2831853072
         
         if action == 3:  
             
-            self.car.angle -= 0.1
-            self.prev_body_angle =  self.car.angle
-            self.car_direction = Vec2d(points_from_angle(self.car.angle))
-            car_direction = self.car_direction
-            self.car.velocity = car_speed/2 * car_direction
+            self.bot.angle -= 0.1
+            self.prev_body_angle =  self.bot.angle
+            self.bot_direction = Vec2d(points_from_angle(self.bot.angle))
+            bot_direction = self.bot_direction
+            self.bot.velocity = bot_speed/2 * bot_direction
             
         elif action == 4:
             
-            self.car.angle += 0.1
-            self.prev_body_angle =  self.car.angle
-            self.car_direction = Vec2d(points_from_angle(self.car.angle))
-            car_direction = self.car_direction
-            self.car.velocity = car_speed * car_direction
-            self.car.velocity = car_speed/2 * car_direction
+            self.bot.angle += 0.1
+            self.prev_body_angle =  self.bot.angle
+            self.bot_direction = Vec2d(points_from_angle(self.bot.angle))
+            bot_direction = self.bot_direction
+            self.bot.velocity = bot_speed * bot_direction
+            self.bot.velocity = bot_speed/2 * bot_direction
                  
         elif action == 5:
             
-            planned_angle = self.plan_angle(self.car.position,(600,600))
+            planned_angle = self.plan_angle(self.bot.position,(600,600))
             move_sign = 0
-            x1,y1 = points_from_angle(self.car.angle)
+            x1,y1 = points_from_angle(self.bot.angle)
             x2,y2 = points_from_angle(planned_angle)
             side,between_angle = angle_between_and_side((x1,y1),(x2,y2))
             
@@ -197,25 +197,25 @@ class Car_env:
                 
                 if(d > 0):
                         
-                        self.car.angle += 0.1
-                        self.prev_body_angle =  self.car.angle
-                        self.car_direction = Vec2d(points_from_angle(self.car.angle))
-                        car_direction = self.car_direction
-                        self.car.velocity = car_speed* car_direction
+                        self.bot.angle += 0.1
+                        self.prev_body_angle =  self.bot.angle
+                        self.bot_direction = Vec2d(points_from_angle(self.bot.angle))
+                        bot_direction = self.bot_direction
+                        self.bot.velocity = bot_speed* bot_direction
                 
                 else:
-                        self.car.angle -= 0.1
-                        self.prev_body_angle =  self.car.angle
-                        self.car_direction = Vec2d(points_from_angle(self.car.angle))
-                        car_direction = self.car_direction
-                        self.car.velocity = car_speed * car_direction
+                        self.bot.angle -= 0.1
+                        self.prev_body_angle =  self.bot.angle
+                        self.bot_direction = Vec2d(points_from_angle(self.bot.angle))
+                        bot_direction = self.bot_direction
+                        self.bot.velocity = bot_speed * bot_direction
             else:
                 
-                self.car.angle = planned_angle
-                self.prev_body_angle =  self.car.angle
-                self.car_direction = Vec2d(points_from_angle(self.car.angle))
-                car_direction = self.car_direction
-                self.car.velocity = car_speed * car_direction
+                self.bot.angle = planned_angle
+                self.prev_body_angle =  self.bot.angle
+                self.bot_direction = Vec2d(points_from_angle(self.bot.angle))
+                bot_direction = self.bot_direction
+                self.bot.velocity = bot_speed * bot_direction
 
         
         screen.fill(THECOLORS["white"])
@@ -224,12 +224,12 @@ class Car_env:
         clock.tick(clock_tick_value)
         
         # Get the current location and the sensors_data there.
-        x, y = self.car.position
-        sensors_data = self.all_sensor_sensors_data(x, y, self.car.angle)
+        x, y = self.bot.position
+        sensors_data = self.all_sensor_sensors_data(x, y, self.bot.angle)
         normalized_sensors_data = [(x-100.0)/100.0 for x in sensors_data] 
         state = np.array([normalized_sensors_data])
         
-        sensors_data = np.append(sensors_data,math.degrees(self.car.angle))
+        sensors_data = np.append(sensors_data,math.degrees(self.bot.angle))
         sensors_data = np.append(sensors_data,[0])
        
         print(sensors_data[:-2])
@@ -251,27 +251,27 @@ class Car_env:
         for ob in self.wall_rects:
             if ob.colliderect(self.circle_rect):
                     self.crashed = True
-                    self.recover_from_crash(car_direction)
+                    self.recover_from_crash(bot_direction)
         
         if (x >= 580 or x <= 20 or y <= 20 or y >=680):
                     self.crashed = True
-                    self.recover_from_crash(car_direction)
+                    self.recover_from_crash(bot_direction)
         
         signal_data = sensors_data[:-2]
         
         return
 
 
-    def recover_from_crash(self, car_direction):
-        """ What happens when car crashes """
+    def recover_from_crash(self, bot_direction):
+        """ What happens when bot crashes """
         
         while self.crashed:
             self.crashed = False 
             for i in range(1):
-                self.car.angle += 2
-                self.car_direction = Vec2d(points_from_angle(self.car.angle))
-                car_direction = self.car_direction
-                self.car.velocity = car_speed * car_direction
+                self.bot.angle += 2
+                self.bot_direction = Vec2d(points_from_angle(self.bot.angle))
+                bot_direction = self.bot_direction
+                self.bot.velocity = bot_speed * bot_direction
                 screen.fill(THECOLORS["white"])
                 self.draw_everything(flag=1)
                 self.space.step(step_size_value)
@@ -354,13 +354,13 @@ class Car_env:
 
 if __name__ == "__main__":
     
-    env = Car_env()
+    env = Bot_env()
     random.seed(10)
     env._step(5)
     
     for i in range(2000):
         
-        if(env.car.position[0] > 500 and env.car.position[1] > 520):
+        if(env.bot.position[0] > 500 and env.bot.position[1] > 520):
             print("MISSION COMPLETE!")
             
         else:
