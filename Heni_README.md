@@ -1,3 +1,7 @@
+# Neural-Network-Based-Collision-Avoidance
+
+### Requirements
+
 For smooth installation on Windows, Linux and Mac. It is recommended to install anaconda from here https://www.anaconda.com/download/
 
 After installing Anaconda, Please run the following commands to install the requirements.
@@ -15,7 +19,7 @@ pip install pymunk
 
 ```
 
-## Usage
+### Usage
 
 To run and understand this project. Please run the following commands sequentially.
 
@@ -39,6 +43,10 @@ python playing_the_model.py
 ```
 The above program loads the neural network model and opens up the simulator. The bot is programmed to drive itself to the destination and feeding the sensor data to the neural network at everytime step.
 If the neural network detects collision bot turns green and takes alternative action, to the action it was planning to take.
+
+
+
+
 
 ### Optional
 
