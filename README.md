@@ -10,12 +10,12 @@ After installing Anaconda, Please run the following steps.
 
 ```python
 
-conda create --name intel_game_env python=3.6
-conda activate intel_game_env 
+conda create -name intel_game_env python=3.6
+source activate intel_game_env   ## For windows - conda activate intel_game_env 
 conda install pytorch-cpu -c pytorch 
 
+pip install cython
 pip install torchvision
-pip install Cython
 pip install pygame
 pip install pymunk
 

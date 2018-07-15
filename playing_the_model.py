@@ -29,12 +29,12 @@ model = Net(input_size, hidden_size, num_classes)
 model.load_state_dict(torch.load('./saved_nets/nn_car_model.pkl'))
 
 
-car_start_location =  1
+car_start_location =  2
 
 if(len(sys.argv) >  1 and sys.argv[1] == "2"):
-    car_start_location =  2
-elif(len(sys.argv) >  1  and sys.argv[1] == "3"):
     car_start_location =  3
+elif(len(sys.argv) >  1  and sys.argv[1] == "3"):
+    car_start_location =  1
     
 def points_from_angle(angle):
     """ Returns the unit vector with given angle """
