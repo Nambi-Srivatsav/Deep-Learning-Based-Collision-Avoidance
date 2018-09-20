@@ -8,7 +8,7 @@ For smooth installation on Windows, Linux and Mac. It is recommended to install 
 
 After installing Anaconda, Please run the following commands.
 
-```python command
+```
 
 conda create -name intel_game_env python=3.6
 source activate intel_game_env   ## Windows -> conda activate intel_game_env 
