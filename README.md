@@ -1,4 +1,4 @@
-# Neural Network for Predicting Collsion
+# Predictive Model For Collision Detection
 This is a demonstration of collision-detection and driving using a feedforward neural network from Interactive Robotics Lab at Arizona State University.
 
 
@@ -59,8 +59,6 @@ python playing_the_model.py 2
 ```
 ```python
 python playing_the_model.py 3
-```
-```
 ```
 
 ## Feedback
